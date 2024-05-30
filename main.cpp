@@ -84,23 +84,20 @@ void show_list(vector <pair<pair<int,int>,char>> &moves)
     all_paths.push_back(ans);
     // cout << "______end_path______\n";
 }
-void show_best(vector <string> &vec)
+string show_best(vector <string> &vec)
 {
 
     if (vec.size() == 0)
-    {
-        cout << "not possible!";
-        return;
-    }
+        return "not possible!";
+
     int min_len = INT32_MAX;
     for (string &s : vec)
         min_len = min(min_len , (int)s.size());
     for (string &s : vec)
         if (s.size() == min_len)
-        {
-            cout << s;
-            return;
-        }
+            return s;
+    
+    return "never reaching here!";
 }
 
 
@@ -120,7 +117,7 @@ class Bug{
             {"butterfly", 3}
         };
 
-    Bug(string name , int pos_x , int pos_y)
+    Bug(string &name , int pos_x , int pos_y)
     {   
         this->type = name;
         this->pos_x = pos_x , this->pos_y = pos_y;
@@ -190,7 +187,7 @@ class Board{
                             is_gold[i][j] = true;
                             continue;
                         }
-                        if (board[i][j] != 1)
+                        else if (board[i][j] != 1)
                         {
                             is_free[i][j] = false;
                             Bug this_bug = Bug(char_to_type[board[i][j]] , i , j);
@@ -289,7 +286,7 @@ class Board{
         bool is_legal_move(int idx , char dir)
         {
             if (board_bugs[idx].is_flying)
-                return is_legal_flying(idx , dir);
+                return  is_legal_flying(idx , dir);
             return is_legal_walking(idx , dir);
 
 
@@ -326,9 +323,12 @@ class Board{
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
             is_free[pos_x][pos_y] = true;
             pos_x += board_bugs[idx].step_size * dx[dir] , pos_y += board_bugs[idx].step_size * dy[dir];
-            
+
+
             while (!is_free[pos_x][pos_y])
                 pos_x += dx[dir] , pos_y += dy[dir];
+
+
             
             board_bugs[idx].pos_x = pos_x , board_bugs[idx].pos_y = pos_y;
 
@@ -336,7 +336,8 @@ class Board{
             {
                 gold_cnt--;
                 is_gold[pos_x][pos_y] = false;
-                is_present[idx] = false;
+                is_present[idx] = false;cout << "showing is_free..\n";
+            show_grid(is_free);
                 is_free[pos_x][pos_y] = true;
                 return make_pair(pos_x , pos_y);
 
@@ -350,7 +351,6 @@ class Board{
 
         pair<int,int> move_dir_fwd(int idx , char dir)
         {  
-
             pair<int,int> init_pos(board_bugs[idx].pos_x , board_bugs[idx].pos_y);
             all_moves.push_back(make_pair(init_pos , dir));
             pair<int, int> pos;
@@ -358,7 +358,7 @@ class Board{
                 pos = fly_fwd(idx , dir);
             else
                 pos = walk_fwd(idx , dir);
-            
+
             if (gold_cnt == 0)
                 show_list(all_moves);
             return pos;
@@ -394,6 +394,10 @@ class Board{
             cout << "num_walls: " << wall_cnt << '\n';
             cout << "gold_count: " << gold_cnt << '\n';
             cout << "bug count: " << board_bugs.size() << '\n';
+
+
+            cout << "showing is_land..\n";
+            show_grid(is_land);
 
             cout << "showing is_free..\n";
             show_grid(is_free);
@@ -431,7 +435,7 @@ void solve_further(Board &board , int moves)
         return;
 
 
-    vector <char> directions{'L' , 'U' , 'R' , 'D'};
+    vector <char> directions{'R' , 'L' , 'U' , 'D'};
     for (int idx = 0 ; idx < board.board_bugs.size() ; idx++)
     {   
         if (!board.is_present[idx])
@@ -487,9 +491,6 @@ int main()
     Board board = Board(grid , walls);
     board.show_board();
     solve_further(board , max_moves);
-    show_best(all_paths);
-
-
-    
+    cout << show_best(all_paths);
     return 0;
 }
