@@ -240,14 +240,16 @@ class Board{
 
         bool is_legal_flying(int idx , int dir)
         {
-            int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
-            int fin_x = board_bugs[idx].step_size * dx[dir] , fin_y = board_bugs[idx].step_size * dy[dir];
-            if (!is_valid(fin_x , fin_y))
+            int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;            
+            pos_x += board_bugs[idx].step_size * dx[dir] , pos_y += board_bugs[idx].step_size * dy[dir];
+
+
+            if (!is_valid(pos_x , pos_y))
                 return false;
-            while (!is_free[fin_x][fin_y])
+            while (!is_free[pos_x][pos_y])
             {
-                fin_x += dx[dir] , fin_y += dy[dir];
-                if (!is_valid(fin_x , fin_y))
+                pos_x += dx[dir] , pos_y += dy[dir];
+                if (!is_valid(pos_x , pos_y))
                     return false;
             }
             return true;
@@ -258,8 +260,8 @@ class Board{
             int fin_x = pos_x + dx[dir] , fin_y = pos_y + dy[dir];
             if (!is_valid(fin_x , fin_y))
                 return false;
-            auto it = find(board_walls[fin_x][fin_y].begin() , board_walls[fin_x][fin_y].end() , dir);
-            if ((it != board_walls[fin_x][fin_y].end()) or (!is_free[fin_x][fin_y]))
+            auto it = find(board_walls[pos_x][pos_y].begin() , board_walls[pos_x][pos_y].end() , dir);
+            if ((it != board_walls[pos_x][pos_y].end()) or (!is_free[fin_x][fin_y]))
                 return true;
             return false;
         }
@@ -267,16 +269,15 @@ class Board{
         bool is_legal_walking(int idx , int dir)
         {   
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
+
             if (is_land_blocked(pos_x , pos_y , dir))
                 return false;
 
             for (int i = 0 ; i < board_bugs[idx].step_size ; i++)
             {
                 pos_x += dx[dir] , pos_y += dy[dir];
-                
                 if (!is_valid(pos_x , pos_y))
                     return false;
-                
                 if (is_land_blocked(pos_x , pos_y , dir))
                     return true;
             }
@@ -297,6 +298,7 @@ class Board{
         {
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
             is_free[pos_x][pos_y] = true;
+
             for (int i = 0 ; i < board_bugs[idx].step_size ; i++)
             {
                 pos_x += dx[dir] , pos_y += dy[dir];
@@ -323,23 +325,25 @@ class Board{
         {
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
             is_free[pos_x][pos_y] = true;
-            int fin_x = board_bugs[idx].step_size * dx[dir] , fin_y = board_bugs[idx].step_size * dy[dir];
-            while (!is_free[fin_x][fin_y])
-                fin_x += dx[dir] , fin_y += dy[dir];
-
+            pos_x += board_bugs[idx].step_size * dx[dir] , pos_y += board_bugs[idx].step_size * dy[dir];
             
-            if (is_gold[fin_x][fin_y])
+            while (!is_free[pos_x][pos_y])
+                pos_x += dx[dir] , pos_y += dy[dir];
+            
+            board_bugs[idx].pos_x = pos_x , board_bugs[idx].pos_y = pos_y;
+
+            if (is_gold[pos_x][pos_y])
             {
                 gold_cnt--;
                 is_gold[pos_x][pos_y] = false;
                 is_present[idx] = false;
-                return make_pair(fin_x , fin_y);
+                is_free[pos_x][pos_y] = true;
+                return make_pair(pos_x , pos_y);
 
             }
-            board_bugs[idx].pos_x = fin_x , board_bugs[idx].pos_y = fin_y;
-
-            is_free[fin_x][fin_y] = false;
-            return make_pair(fin_x , fin_y);
+            
+            is_free[pos_x][pos_y] = false;
+            return make_pair(pos_x , pos_y);  
         }
 
  
@@ -427,7 +431,7 @@ void solve_further(Board &board , int moves)
         return;
 
 
-    vector <char> directions{'U' , 'R' , 'L' , 'D'};
+    vector <char> directions{'L' , 'U' , 'R' , 'D'};
     for (int idx = 0 ; idx < board.board_bugs.size() ; idx++)
     {   
         if (!board.is_present[idx])
