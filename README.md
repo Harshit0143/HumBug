@@ -36,7 +36,7 @@
 <img src= "./Images/input_desc.jpeg" alt = "io fomrat description" width = "600">
 </p>
 
-## Sample input:
+## Sample input
 <p align="center">
 <img src= "./Images/input_example.jpg" alt = "io fomrat description" width = "600">
 </p>
