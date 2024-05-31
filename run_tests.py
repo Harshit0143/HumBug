@@ -1,8 +1,7 @@
-import os
 from tqdm import tqdm
-
 import subprocess
 import re
+
 
 def contains_integer(s):
     integers = re.findall(r'\d+', s)
@@ -23,11 +22,9 @@ for idx in tqdm(range(15 , 91)):
         lines = file.readlines()
         while not contains_integer(lines[-1]):
             lines.pop()
-        max_moves = extract_integer(lines[-1])[0]
-
-        
+        # max_moves = extract_integer(lines[-1])[0]
+        max_moves = 10000
         command = f'bash ./run.sh  {max_moves} {file_name}'
         result = subprocess.run(command, shell = True , capture_output = True, text = True)
-        write_str(result.stdout[: -1] , f'solutions/level_{idx}.txt')
         assert result.stderr == ""
 

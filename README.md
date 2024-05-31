@@ -1,4 +1,4 @@
-# HumBug
+# Humbug
 
 
 ## Input format
@@ -22,6 +22,8 @@
     - Each of the $t$ lines contain $2$ spaces integers, describing a cell and a single character from $\{L , R , U , D\}$ describing the position of the wall in that cell (see figure).
     - The next line contained $q$, the maximum number of moves allowed. 
 
+
+
 ## Output format
 * If it is not possible to complete the game in the given input number of steps, the output file contains a single line, that has written `not possible!`
 * Otherwise, each of the lines, sequentially describle the move used to compete the game as:
@@ -31,5 +33,63 @@
 * It is assured that there will necesarily be a `bug` at the `coordinate` presented in the output. 
 
 <p align="center">
-<img src= "./image.jpeg" alt = "io fomrat description" width = "600">
+<img src= "./Images/input_desc.jpeg" alt = "io fomrat description" width = "600">
 </p>
+
+## Sample input:
+<p align="center">
+<img src= "./Images/input_example.jpg" alt = "io fomrat description" width = "600">
+</p>
+
+The above image is encoded as given below:
+```
+6 6
+0 0 0 0 7 0
+0 0 0 0 6 0
+0 0 0 0 1 0
+2 1 4 7 1 0
+2 0 1 0 1 2
+2 0 0 0 0 0
+4
+3 0 L
+4 5 L
+4 4 R
+5 0 D
+10
+```
+and can be solved in $10$ steps as:
+```
+(3,2) -> R
+(1,4) -> D
+(4,4) -> L
+(4,2) -> L
+(3,4) -> D
+(0,4) -> D
+(4,4) -> R
+(3,3) -> L
+(3,4) -> L
+(3,0) -> D
+```
+
+## Performace
+
+
+* Compile commands:
+```
+        g++ -std=c++20 -o ./src/main     ./src/main.cpp
+        g++ -std=c++20 -o ./src/main -O1 ./src/main.cpp
+        g++ -std=c++20 -o ./src/main -O2 ./src/main.cpp
+        g++ -std=c++20 -o ./src/main -O3 ./src/main.cpp
+```
+
+* Runtime (seconds) for various problem sizes.
+  
+<div align="center">
+
+| `max_moves` | `O0` | `O1` | `O2` | `O3` |
+|-------|----|----|----|----|
+| $Least$ | $13$   |  $4$  |  $3$  | $6$   |
+| $100$    | $40$   | $9$   | $4$   |  $7$  |
+| $1000$   | $367$   | $85$   | $34$   |  $71$  |
+| $10000$   | $3178$   | $572$   | $363$   |  $385$  |
+</div>
