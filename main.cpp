@@ -49,6 +49,7 @@ typedef unsigned long long ull;
 typedef long double lld;
 
 vector <string> all_paths;
+int total_moves;
 
 
 void show_grid(vector<vector<int>> &vec)
@@ -75,13 +76,14 @@ void show_grid(vector<vector<bool>> &vec)
     }
 }
 
-void show_list(vector <pair<pair<int,int>,char>> &moves)
+int show_list(vector <pair<pair<int,int>,char>> &moves)
 {
-    // cout << "found path!\n";
+    int path_len = moves.size();
     string ans = "";
     for (int i = 0 ; i < moves.size() ; i++)
         ans += "(" + to_string(moves[i].first.first) + "," + to_string(moves[i].first.second) + ") -> " + moves[i].second + "\n";
     all_paths.push_back(ans);
+    return path_len;
     // cout << "______end_path______\n";
 }
 string show_best(vector <string> &vec)
@@ -138,6 +140,7 @@ class Board{
         vector <pair<pair<int,int>,char>> all_moves;
         vector <Bug> board_bugs;
         vector <bool> is_present;
+        int min_moves = INT32_MAX;
         map <char,int>  dx = {
             {'L' , 0},
             {'R' , 0},
@@ -358,7 +361,8 @@ class Board{
                 pos = walk_fwd(idx , dir);
 
             if (gold_cnt == 0)
-                show_list(all_moves);
+                min_moves = min(min_moves ,show_list(all_moves));
+    
             return pos;
 
         }
@@ -433,11 +437,8 @@ void solve_further(Board &board , int moves)
         show_list(board.all_moves);
         return; 
     }
-    if (moves == 0)
+    if ((moves == 0) or (board.gold_cnt > moves) or (total_moves - moves >= board.min_moves))
         return;
-    if (board.gold_cnt > moves)
-        return;
-
 
     vector <char> directions{'R' , 'L' , 'U' , 'D'};
     for (int idx = 0 ; idx < board.board_bugs.size() ; idx++)
@@ -446,11 +447,9 @@ void solve_further(Board &board , int moves)
             continue;
         for (char dir : directions)
         {
-            // cout << "in_dirn: " << dir<< '\n';
+
             if (not board.is_legal_move(idx , dir))
-                continue;
-            // cout << "ot_dirn: " << dir << '\n';
-            
+                continue;            
             int old_x = board.board_bugs[idx].pos_x ,  old_y = board.board_bugs[idx].pos_y; 
             pair<int, int> new_pos = board.move_dir_fwd(idx , dir);
             solve_further(board , moves - 1);
@@ -462,8 +461,11 @@ void solve_further(Board &board , int moves)
 
 // g++ -std=c++20 -o main main.cpp && ./main
 
-void evalauate_example(int level)
+void evalauate_example(int level , bool verbose = false)
 {
+    if (verbose)
+        cout << "evaluating level " << level << '\n';
+
     string filename = "./Level_encodings/level_i" + to_string(level) + ".txt";
     string output_filename = "./Solutions/level_i" + to_string(level) + ".txt";  
     ifstream file(filename);
@@ -486,11 +488,10 @@ void evalauate_example(int level)
         walls.push_back(make_pair(make_pair(x , y) , dir));
     }
 
-    int max_moves;
-    file >> max_moves;
+    file >> total_moves;
     file.close();
     Board board = Board(grid , walls);
-    solve_further(board , max_moves);
+    solve_further(board , total_moves);
     string answer = show_best(all_paths);
     ofstream output_stream;
 
@@ -510,12 +511,12 @@ int main()
 {
     vector<string> bugs = {"snail", "spider", "grasshopper", "ladybug", "honeybee", "butterfly"};
     fastio;
-    for (int idx = 15 ; idx <= 90 ; idx++)
-    {   if (idx == 51 or idx == 82 or idx == 83 or idx == 87 or idx == 88 or idx == 90)
-            continue;
-        
-        // cout << "evaluating level " << idx << "...\n";
-        evalauate_example(idx);
+    for (int idx = 51 ; idx <= 51 ; idx++)
+    {   
+        // if (idx == 51  or idx == 83)
+        //     continue;
+    
+        evalauate_example(idx , true);
         all_paths.clear();
     }
     return 0;
