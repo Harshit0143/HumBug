@@ -432,12 +432,9 @@ class Board{
 
 void solve_further(Board &board , int moves)
 {   
-    if (board.gold_cnt == 0)
-    {   
-        show_list(board.all_moves);
-        return; 
-    }
-    if ((moves == 0) or (board.gold_cnt > moves) or (total_moves - moves >= board.min_moves))
+    if (board.min_moves < INT32_MAX)
+        return;
+    if ((moves == 0) or (board.gold_cnt > moves)) // or (total_moves - moves >= board.min_moves))
         return;
 
     vector <char> directions{'R' , 'L' , 'U' , 'D'};
