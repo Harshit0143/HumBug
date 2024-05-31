@@ -404,9 +404,11 @@ class Board{
             show_grid(is_gold);
         }
 
-        Board(vector<vector<int>> &board , vector<pair<pair<int,int>,char>> &walls)
+        Board(vector<vector<int>> &board , vector<pair<pair<int,int>,char>> &walls , bool verbose = false)
         {
-            cout << "building board....." << '\n';
+
+            if (verbose)
+                cout << "building board....." << '\n';
             n = board.size() , m = board[0].size();
             is_land.resize(n , vector<bool>(m , false));
             is_free.resize(n , vector<bool>(m , true));
@@ -415,7 +417,9 @@ class Board{
             fill_land_free(board);
             fill_board_obstacles(walls);
             assert_wall_placement();
-            cout << "finished building board!" << '\n';
+            if (verbose)
+                cout << "finished building board!" << '\n';
+
 
         }
 };
@@ -430,6 +434,8 @@ void solve_further(Board &board , int moves)
         return; 
     }
     if (moves == 0)
+        return;
+    if (board.gold_cnt > moves)
         return;
 
 
@@ -454,22 +460,20 @@ void solve_further(Board &board , int moves)
 }
 
 
-
 // g++ -std=c++20 -o main main.cpp && ./main
-int main()
+
+void evalauate_example(int level)
 {
-    vector<string> bugs = {"snail", "spider", "grasshopper", "ladybug", "honeybee", "butterfly"};
-    fastio;
-    ifstream file("levels/level_i40.txt");
-    
+    string filename = "./Level_encodings/level_i" + to_string(level) + ".txt";
+    string output_filename = "./Solutions/level_i" + to_string(level) + ".txt";  
+    ifstream file(filename);
     int rows , cols;
     file >> rows >> cols;
-    cout << "rows: " << rows << " cols: " << cols <<'\n'; 
     vector<vector<int>> grid(rows, vector<int>(cols));
     for (int i = 0 ; i < rows ; ++i)
-        for (int j = 0; j < cols; ++j) {
+        for (int j = 0; j < cols; ++j)
             file >> grid[i][j];
-        }
+        
 
     int num_walls;
     file >> num_walls;
@@ -484,11 +488,35 @@ int main()
 
     int max_moves;
     file >> max_moves;
-    cout << "max_moves: " << max_moves << '\n';
     file.close();
     Board board = Board(grid , walls);
-    board.show_board();
     solve_further(board , max_moves);
-    cout << show_best(all_paths);
+    string answer = show_best(all_paths);
+    ofstream output_stream;
+
+    output_stream.open(output_filename);
+    output_stream << answer;
+    output_stream.close();
+
+    if (answer == "not possible!")
+        cout << "file " << filename << " not solved!\n";
+    else
+        cout << "level " << level << " solved successfully!\n";
+
+}
+
+
+int main()
+{
+    vector<string> bugs = {"snail", "spider", "grasshopper", "ladybug", "honeybee", "butterfly"};
+    fastio;
+    for (int idx = 15 ; idx <= 90 ; idx++)
+    {   if (idx == 51 or idx == 82 or idx == 83 or idx == 87 or idx == 88 or idx == 90)
+            continue;
+        
+        // cout << "evaluating level " << idx << "...\n";
+        evalauate_example(idx);
+        all_paths.clear();
+    }
     return 0;
 }
