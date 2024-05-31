@@ -513,10 +513,10 @@ void evalauate_example(string filename, bool verbose = false)
     string answer = show_best(all_paths);
     cout << answer;
 
-    if (answer == "not possible!\n")
-        cout << "file " << filename << " not solved!\n";
-    else
-        cout << "test case " << filename << " solved successfully!\n";
+    // if (answer == "not possible!\n")
+    //     cout << "file " << filename << " not solved!\n";
+    // else
+    //     cout << "test case " << filename << " solved successfully!\n";
 }
 
 int main(int argc, char *argv[])
