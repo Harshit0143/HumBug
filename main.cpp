@@ -138,13 +138,13 @@ class Board{
         vector <pair<pair<int,int>,char>> all_moves;
         vector <Bug> board_bugs;
         vector <bool> is_present;
-        map <char , int>  dx = {
+        map <char,int>  dx = {
             {'L' , 0},
             {'R' , 0},
             {'U' , -1},
             {'D' , +1}
         };
-        map <char , int>  dy = {
+        map <char,int>  dy = {
             {'L' , -1},
             {'R' , +1},
             {'U' , 0},
@@ -239,8 +239,6 @@ class Board{
         {
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;            
             pos_x += board_bugs[idx].step_size * dx[dir] , pos_y += board_bugs[idx].step_size * dy[dir];
-
-
             if (!is_valid(pos_x , pos_y))
                 return false;
             while (!is_free[pos_x][pos_y])
@@ -255,10 +253,12 @@ class Board{
 
         bool is_land_blocked(int pos_x , int pos_y , char dir){
             int fin_x = pos_x + dx[dir] , fin_y = pos_y + dy[dir];
+            auto it = find(board_walls[pos_x][pos_y].begin() , board_walls[pos_x][pos_y].end() , dir);
+            if (it != board_walls[pos_x][pos_y].end())
+                return true;
             if (!is_valid(fin_x , fin_y))
                 return false;
-            auto it = find(board_walls[pos_x][pos_y].begin() , board_walls[pos_x][pos_y].end() , dir);
-            if ((it != board_walls[pos_x][pos_y].end()) or (!is_free[fin_x][fin_y]))
+            if (!is_free[fin_x][fin_y])
                 return true;
             return false;
         }
@@ -291,11 +291,10 @@ class Board{
 
 
         } 
-        pair<int , int> walk_fwd(int idx , char dir)
+        pair<int,int> walk_fwd(int idx , char dir)
         {
             int pos_x = board_bugs[idx].pos_x , pos_y = board_bugs[idx].pos_y;
             is_free[pos_x][pos_y] = true;
-
             for (int i = 0 ; i < board_bugs[idx].step_size ; i++)
             {
                 pos_x += dx[dir] , pos_y += dy[dir];
@@ -336,8 +335,7 @@ class Board{
             {
                 gold_cnt--;
                 is_gold[pos_x][pos_y] = false;
-                is_present[idx] = false;cout << "showing is_free..\n";
-            show_grid(is_free);
+                is_present[idx] = false;;
                 is_free[pos_x][pos_y] = true;
                 return make_pair(pos_x , pos_y);
 
