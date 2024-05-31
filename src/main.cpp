@@ -107,6 +107,7 @@ public:
     string type;
     int pos_x, pos_y, step_size;
     bool is_flying = false;
+    char face;
     vector<string> flying{"grasshopper", "honeybee", "butterfly"};
     map<string, int> step_sizes{
         {"snail", 1},
@@ -116,11 +117,12 @@ public:
         {"honeybee", 2},
         {"butterfly", 3}};
 
-    Bug(string &name, int pos_x, int pos_y)
+    Bug(string &name, int pos_x, int pos_y, char face)
     {
         this->type = name;
         this->pos_x = pos_x, this->pos_y = pos_y;
         this->step_size = step_sizes[name];
+        this->face = face;
         auto it = find(flying.begin(), flying.end(), name);
         if (it != flying.end())
             is_flying = true;
@@ -137,6 +139,8 @@ public:
     vector<pair<pair<int, int>, char>> all_moves;
     vector<Bug> board_bugs;
     vector<bool> is_present;
+    set <string> seen_states;
+    int moves_done = 0;
     int min_moves = INT32_MAX;
     map<char, int> dx = {
         {'L', 0},
@@ -168,6 +172,31 @@ public:
         {"honeybee", 2},
         {"butterfly", 3}};
 
+    string encode_grid()
+    {
+        vector<vector<char>> curr_board(n, vector<char>(m, '0'));
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+            {
+                if (is_land[i][j])
+                    curr_board[i][j] = '1';
+                if (is_gold[i][j])
+                    curr_board[i][j] = '2';
+            }
+        for (int idx = 0; idx < board_bugs.size(); idx++)
+        {
+            if (is_present[idx])
+            {
+                int pos_x = board_bugs[idx].pos_x, pos_y = board_bugs[idx].pos_y;
+                curr_board[pos_x][pos_y] = board_bugs[idx].face;
+            }
+        }
+        string state_encoding;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+                state_encoding.push_back(curr_board[i][j]);
+        return state_encoding + to_string(moves_done);
+    }
     void fill_land_free(vector<vector<int>> &board)
     {
         for (int i = 0; i < n; i++)
@@ -185,7 +214,7 @@ public:
                     else if (board[i][j] != 1)
                     {
                         is_free[i][j] = false;
-                        Bug this_bug = Bug(char_to_type[board[i][j]], i, j);
+                        Bug this_bug = Bug(char_to_type[board[i][j]], i, j, '0' + board[i][j]);
                         board_bugs.push_back(this_bug);
                         is_present.push_back(true);
                     }
@@ -328,7 +357,7 @@ public:
         return make_pair(pos_x, pos_y);
     }
 
-    pair<int, int> move_dir_fwd(int idx, char dir)
+    pair<bool,pair<int, int>> move_dir_fwd(int idx, char dir)
     {
         pair<int, int> init_pos(board_bugs[idx].pos_x, board_bugs[idx].pos_y);
         all_moves.push_back(make_pair(init_pos, dir));
@@ -341,12 +370,28 @@ public:
         if (gold_cnt == 0)
             min_moves = min(min_moves, show_list(all_moves));
 
-        return pos;
+        moves_done++;
+        string state_encoding = encode_grid();
+
+        
+
+        if (seen_states.empty())
+        {
+            seen_states.insert(state_encoding);
+            return make_pair(true , pos);
+        }
+
+        auto it = seen_states.find(state_encoding);
+        if (it != seen_states.end())
+            return make_pair(false , pos);
+
+        seen_states.insert(state_encoding);
+        return make_pair(true , pos);
+
     }
 
     void undo_move(int idx, int new_x, int new_y, int old_x, int old_y)
     {
-
         if (!is_present[idx])
         {
             gold_cnt++;
@@ -357,6 +402,8 @@ public:
         all_moves.pop_back();
         is_free[old_x][old_y] = false;
         is_free[new_x][new_y] = true;
+        moves_done--;
+
     }
 
     void show_board()
@@ -419,27 +466,27 @@ void solve_further(Board &board, int moves)
             if (not board.is_legal_move(idx, dir))
                 continue;
             int old_x = board.board_bugs[idx].pos_x, old_y = board.board_bugs[idx].pos_y;
-            pair<int, int> new_pos = board.move_dir_fwd(idx, dir);
-            solve_further(board, moves - 1);
-            board.undo_move(idx, new_pos.first, new_pos.second, old_x, old_y);
+            pair<bool , pair<int, int>> move_response = board.move_dir_fwd(idx, dir);
+            if (move_response.first)
+                solve_further(board, moves - 1);
+            board.undo_move(idx, move_response.second.first, move_response.second.second, old_x, old_y);
         }
     }
 }
 
 // g++ -std=c++20 -o main main.cpp && ./main 6 ./test_cases/level_i22.txt
 
-void evalauate_example(string filename , bool verbose = false)
+void evalauate_example(string filename, bool verbose = false)
 {
     if (verbose)
         cout << "evaluating file " << filename << '\n';
 
-
-
     ifstream file(filename);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Error! Couldn't open test case file!" << filename << '\n';
-        return ;
+        return;
     }
     int rows, cols;
     file >> rows >> cols;
@@ -472,13 +519,13 @@ void evalauate_example(string filename , bool verbose = false)
         cout << "test case " << filename << " solved successfully!\n";
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     vector<string> bugs = {"snail", "spider", "grasshopper", "ladybug", "honeybee", "butterfly"};
     fastio;
     total_moves = stoi(argv[1]);
     string filename = argv[2];
-    evalauate_example(argv[2] , false);
+    evalauate_example(argv[2], false);
 
     return 0;
 }
