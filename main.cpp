@@ -84,7 +84,7 @@ int show_list(vector <pair<pair<int,int>,char>> &moves)
         ans += "(" + to_string(moves[i].first.first) + "," + to_string(moves[i].first.second) + ") -> " + moves[i].second + "\n";
     all_paths.push_back(ans);
     return path_len;
-    // cout << "______end_path______\n";
+
 }
 string show_best(vector <string> &vec)
 {
@@ -422,7 +422,10 @@ class Board{
             fill_board_obstacles(walls);
             assert_wall_placement();
             if (verbose)
+            {
+                show_board();
                 cout << "finished building board!" << '\n';
+            }
 
 
         }
@@ -487,7 +490,7 @@ void evalauate_example(int level , bool verbose = false)
 
     file >> total_moves;
     file.close();
-    Board board = Board(grid , walls);
+    Board board = Board(grid , walls , true);
     solve_further(board , total_moves);
     string answer = show_best(all_paths);
     ofstream output_stream;
